@@ -1,9 +1,10 @@
 import config from '../config';
 
-const isProduction = process.env.NODE_ENV === 'production';
+const isProduction = process.env.REACT_APP_NODE_ENV  === 'production';
 const BASE_URL = isProduction ? config.API_URL : '';
 
 const fetchWithAuth = async (url, options = {}) => {
+    console.log('BAse', BASE_URL);
     const token = localStorage.getItem('token');
     const headers = {
         'Content-Type': 'application/json',
@@ -15,7 +16,7 @@ const fetchWithAuth = async (url, options = {}) => {
     // In production, use full URLs with the production API URL
     const fullUrl = isProduction ? `${BASE_URL}${url}` : url;
 
-    console.log('Environment:', process.env.NODE_ENV);
+    console.log('Environment:', process.env.REACT_APP_NODE_ENV );
     console.log('Making API request to:', fullUrl);
     console.log('Is Production:', isProduction);
     console.log('Base URL:', BASE_URL);

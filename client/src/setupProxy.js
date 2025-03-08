@@ -4,7 +4,8 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 // In production, it is completely ignored
 module.exports = function(app) {
   // Double-check we are in development
-  if (process.env.NODE_ENV !== 'production') {
+  if (process.env.REACT_APP_NODE_ENV  !== 'production') {
+    console.log('REACT_APP_NODE_ENV :', process.env.REACT_APP_NODE_ENV );
     console.log('Setting up development proxy for /api routes to localhost:3001');
     app.use(
       '/api',

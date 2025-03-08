@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { post } from '../utils/api';
 import './Auth.css';
 
 const Login = () => {
@@ -24,19 +25,7 @@ const Login = () => {
         setLoading(true);
 
         try {
-            const response = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || 'Login failed');
-            }
+            const data = await post('/api/auth/login', formData);
 
             // Save token and user data
             localStorage.setItem('token', data.token);
