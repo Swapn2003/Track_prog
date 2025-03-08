@@ -1,4 +1,6 @@
-const BASE_URL = 'https://track-prog-backend.onrender.com';
+import config from '../config';
+
+const BASE_URL = config.API_URL;
 
 const fetchWithAuth = async (url, options = {}) => {
     const token = localStorage.getItem('token');

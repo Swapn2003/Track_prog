@@ -249,102 +249,184 @@ app.get('/api/entries/search', authMiddleware, async (req, res) => {
     }
 });
 
+// Add debug endpoint for Google Sheets service
+app.get('/api/debug/sheets-status', authMiddleware, async (req, res) => {
+    try {
+        if (!googleSheetsService) {
+            return res.status(500).json({ 
+                status: 'error',
+                message: 'Google Sheets service is not initialized'
+            });
+        }
+
+        // Test the service by trying to list files
+        const testResponse = await googleSheetsService.testConnection(req.user.folderId);
+        res.json({
+            status: 'success',
+            message: 'Google Sheets service is working',
+            details: testResponse
+        });
+    } catch (error) {
+        console.error('Debug endpoint error:', error);
+        res.status(500).json({
+            status: 'error',
+            message: 'Error testing Google Sheets service',
+            error: error.message,
+            details: error.response?.data
+        });
+    }
+});
+
+// Add DSA Entry endpoint
 app.post('/api/entries', authMiddleware, async (req, res) => {
     try {
-        console.log('Creating new entry...');
+        const folderId = req.user.folderId;
+        console.log('\n=== Starting new entry creation ===');
+        console.log('User ID:', req.user.userId);
+        console.log('Folder ID:', folderId);
+        
+        if (!folderId) {
+            console.error('No folder ID provided');
+            return res.status(400).json({ message: 'Folder ID is required. Please update your folder ID in settings.' });
+        }
+
+        if (!googleSheetsService) {
+            console.error('Google Sheets service not initialized');
+            return res.status(500).json({ message: 'Google Sheets service is not initialized' });
+        }
+
+        const {
+            topic,
+            title,
+            description,
+            problemLink,
+            approach,
+            code,
+            timeComplexity,
+            spaceComplexity,
+            isBasic
+        } = req.body;
+
+        console.log('Entry data received:', { topic, title });
+
+        // First, verify Google Sheets access
+        console.log('Verifying Google Sheets access...');
+        try {
+            await googleSheetsService.testConnection(folderId);
+            console.log('Google Sheets access verified');
+        } catch (error) {
+            console.error('Google Sheets access test failed:', error);
+            return res.status(500).json({ 
+                message: 'Failed to verify Google Sheets access',
+                error: error.message
+            });
+        }
+
+        console.log('Adding entry to Google Sheet...');
+        // Add entry to Google Sheet
+        const rowIndex = await googleSheetsService.addEntry({
+            topic,
+            description,
+            problemLink,
+            approach,
+            code,
+            timeComplexity,
+            spaceComplexity
+        }, folderId);
+
+        console.log('Entry added to sheet at row:', rowIndex);
+
+        // Create MongoDB entry
         const entry = new DSAEntry({
-            ...req.body,
+            topic,
+            title,
+            description,
+            problemLink,
+            approach,
+            code,
+            timeComplexity,
+            spaceComplexity,
+            isBasic,
+            sheetRowIndex: rowIndex,
             userId: req.user.userId
         });
-        
-        // Add to Google Sheets if service is available
-        if (googleSheetsService) {
-            try {
-                console.log('Adding entry to Google Sheets...');
-                const rowIndex = await googleSheetsService.addEntry(entry, req.user.folderId);
-                entry.sheetRowIndex = rowIndex;
-                console.log('Entry added to Google Sheets at row:', rowIndex);
-            } catch (error) {
-                console.error('Error adding to Google Sheets:', error);
-                if (error.response) {
-                    console.error('Google Sheets API response:', error.response.data);
-                }
-                // Don't fail the request if Google Sheets fails
-            }
-        } else {
-            console.log('Google Sheets service not available, skipping sheet update');
-        }
 
         console.log('Saving entry to MongoDB...');
-        const newEntry = await entry.save();
+        await entry.save();
         console.log('Entry saved successfully');
-        res.status(201).json(newEntry);
-    } catch (error) {
-        console.error('Error creating entry:', error);
-        res.status(400).json({ message: error.message });
-    }
-});
+        console.log('=== Entry creation completed ===\n');
 
-app.delete('/api/entries/:id', authMiddleware, async (req, res) => {
-    try {
-        console.log('Deleting entry:', req.params.id);
-        const entry = await DSAEntry.findOne({ 
-            _id: req.params.id,
-            userId: req.user.userId
+        res.status(201).json(entry);
+    } catch (error) {
+        console.error('\n=== Error in entry creation ===');
+        console.error('Error details:', error);
+        if (error.response) {
+            console.error('API Response:', error.response.data);
+        }
+        console.error('=== End of error details ===\n');
+
+        res.status(500).json({ 
+            message: 'Error adding entry', 
+            error: error.message,
+            details: error.response?.data || 'No additional details available'
         });
-        
-        if (!entry) {
-            return res.status(404).json({ message: 'Entry not found' });
-        }
-
-        // Delete from Google Sheets if service is available
-        if (googleSheetsService && entry.sheetRowIndex) {
-            try {
-                console.log('Deleting entry from Google Sheets row:', entry.sheetRowIndex);
-                await googleSheetsService.deleteEntry(entry.sheetRowIndex, req.user.folderId);
-                console.log('Entry deleted from Google Sheets');
-            } catch (error) {
-                console.error('Error deleting from Google Sheets:', error);
-                if (error.response) {
-                    console.error('Google Sheets API response:', error.response.data);
-                }
-                // Don't fail the request if Google Sheets fails
-            }
-        }
-
-        await entry.deleteOne();
-        console.log('Entry deleted from MongoDB');
-        res.json({ message: 'Entry deleted successfully' });
-    } catch (error) {
-        console.error('Error deleting entry:', error);
-        res.status(500).json({ message: error.message });
     }
 });
 
-// Update entry (star/basic status)
+// Update entry endpoint
 app.patch('/api/entries/:id', authMiddleware, async (req, res) => {
     try {
-        const { id } = req.params;
-        const update = {};
+        const entryId = req.params.id;
+        const updates = req.body;
         
-        // Only allow updating isStarred and isBasic fields
-        if ('isStarred' in req.body) update.isStarred = req.body.isStarred;
-        if ('isBasic' in req.body) update.isBasic = req.body.isBasic;
-
-        const entry = await DSAEntry.findOneAndUpdate(
-            { _id: id, userId: req.user.userId },
-            update,
-            { new: true }
-        );
-
+        // Find the entry and verify ownership
+        const entry = await DSAEntry.findOne({ _id: entryId, userId: req.user.userId });
         if (!entry) {
             return res.status(404).json({ message: 'Entry not found' });
         }
 
+        // Only allow updating isStarred and isBasic fields
+        if ('isStarred' in updates) {
+            entry.isStarred = updates.isStarred;
+        }
+        if ('isBasic' in updates) {
+            entry.isBasic = updates.isBasic;
+        }
+
+        // Update in Google Sheet if needed
+        if (entry.sheetRowIndex) {
+            await googleSheetsService.updateEntry(entry, req.user.folderId);
+        }
+
+        await entry.save();
         res.json(entry);
     } catch (error) {
         console.error('Error updating entry:', error);
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: 'Error updating entry', error: error.message });
+    }
+});
+
+// Delete entry endpoint
+app.delete('/api/entries/:id', authMiddleware, async (req, res) => {
+    try {
+        const entryId = req.params.id;
+        
+        // Find the entry and verify ownership
+        const entry = await DSAEntry.findOne({ _id: entryId, userId: req.user.userId });
+        if (!entry) {
+            return res.status(404).json({ message: 'Entry not found' });
+        }
+
+        // Delete from Google Sheet if row index exists
+        if (entry.sheetRowIndex) {
+            await googleSheetsService.deleteEntry(entry.sheetRowIndex, req.user.folderId);
+        }
+
+        await entry.deleteOne();
+        res.json({ message: 'Entry deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting entry:', error);
+        res.status(500).json({ message: 'Error deleting entry', error: error.message });
     }
 });
 

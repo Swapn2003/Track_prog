@@ -4,7 +4,7 @@ module.exports = function(app) {
   app.use(
     '/api',
     createProxyMiddleware({
-      target: 'https://track-prog-backend.onrender.com',
+      target: 'http://localhost:3001',
       changeOrigin: true,
       secure: false,
       onError: (err, req, res) => {
