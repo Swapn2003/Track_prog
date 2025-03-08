@@ -1,0 +1,161 @@
+.add-entry-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2rem;
+}
+
+.add-entry-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.add-entry-header h1 {
+    margin: 0;
+    color: #2c3e50;
+}
+
+.add-entry-header .back-button {
+    background: none;
+    border: none;
+    color: #3498db;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    transition: background-color 0.2s;
+}
+
+.add-entry-header .back-button:hover {
+    background-color: #f0f0f0;
+}
+
+.entry-form {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #2c3e50;
+    font-weight: 500;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+.form-group textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.code-input {
+    font-family: 'Courier New', Courier, monospace;
+    min-height: 200px !important;
+    background: #2c3e50;
+    color: #fff;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.submit-button,
+.cancel-button {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.submit-button {
+    background: #3498db;
+    color: white;
+    flex: 1;
+}
+
+.submit-button:hover {
+    background: #2980b9;
+}
+
+.submit-button:disabled {
+    background: #95a5a6;
+    cursor: not-allowed;
+}
+
+.cancel-button {
+    background: #e74c3c;
+    color: white;
+}
+
+.cancel-button:hover {
+    background: #c0392b;
+}
+
+.error-message {
+    background: #ffebee;
+    color: #c62828;
+    padding: 1rem;
+    border-radius: 5px;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .add-entry-container {
+        padding: 1rem;
+    }
+
+    .add-entry-header {
+        flex-direction: column-reverse;
+        gap: 1rem;
+        text-align: center;
+    }
+
+    .add-entry-header .back-button {
+        width: 100%;
+    }
+
+    .entry-form {
+        padding: 1rem;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+} 
