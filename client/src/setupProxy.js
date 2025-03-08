@@ -1,8 +1,11 @@
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
+// This file is only used in development
+// In production, it is completely ignored
 module.exports = function(app) {
-  // Only apply proxy in development
-  if (process.env.NODE_ENV === 'development') {
+  // Double-check we are in development
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('Setting up development proxy to localhost:3001');
     app.use(
       '/api',
       createProxyMiddleware({
@@ -15,5 +18,7 @@ module.exports = function(app) {
         }
       })
     );
+  } else {
+    console.log('Production mode - proxy not enabled');
   }
 }; 

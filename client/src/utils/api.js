@@ -1,7 +1,7 @@
 import config from '../config';
 
-const isDevelopment = process.env.NODE_ENV === 'development';
-const BASE_URL = isDevelopment ? '' : config.API_URL;
+const isProduction = process.env.NODE_ENV === 'production';
+const BASE_URL = isProduction ? config.API_URL : '';
 
 const fetchWithAuth = async (url, options = {}) => {
     const token = localStorage.getItem('token');
@@ -12,11 +12,13 @@ const fetchWithAuth = async (url, options = {}) => {
     };
 
     // In development, use relative URLs (proxy will handle it)
-    // In production, use full URLs
-    const fullUrl = isDevelopment ? url : `${BASE_URL}${url}`;
+    // In production, use full URLs with the production API URL
+    const fullUrl = isProduction ? `${BASE_URL}${url}` : url;
 
-    console.log('Making API request to:', fullUrl);
     console.log('Environment:', process.env.NODE_ENV);
+    console.log('Making API request to:', fullUrl);
+    console.log('Is Production:', isProduction);
+    console.log('Base URL:', BASE_URL);
 
     const response = await fetch(fullUrl, {
         ...options,
