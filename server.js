@@ -10,8 +10,15 @@ const GoogleSheetsService = require('./utils/googleSheets');
 
 const app = express();
 
+// CORS configuration
+const corsOptions = {
+    origin: ['https://track-prog-frontend.onrender.com', 'http://localhost:3000'],
+    credentials: true,
+    optionsSuccessStatus: 200
+};
+
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Initialize Google Sheets service
