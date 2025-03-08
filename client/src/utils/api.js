@@ -1,23 +1,21 @@
-const getAuthHeaders = () => {
-    const token = localStorage.getItem('token');
-    return {
-        'Content-Type': 'application/json',
-        'Authorization': token ? `Bearer ${token}` : ''
-    };
-};
+const BASE_URL = 'https://track-prog-backend.onrender.com';
 
-export const fetchWithAuth = async (url, options = {}) => {
-    const response = await fetch(url, {
+const fetchWithAuth = async (url, options = {}) => {
+    const token = localStorage.getItem('token');
+    const headers = {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+        ...options.headers
+    };
+
+    const response = await fetch(`${BASE_URL}${url}`, {
         ...options,
-        headers: {
-            ...getAuthHeaders(),
-            ...options.headers
-        }
+        headers
     });
 
     if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || 'Request failed');
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || 'Something went wrong');
     }
 
     return response.json();
