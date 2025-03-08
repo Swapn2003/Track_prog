@@ -13,8 +13,12 @@ function extractProblemDetails() {
     // Get problem title - try multiple possible selectors
     let title = '';
     const titleSelectors = [
+      // New specific selector
+      '#\\37 4bda7d9-3be8-3ae0-8b01-03b0e72579fc > div > div.flex.w-full.flex-1.flex-col.gap-4.overflow-y-auto.px-4.py-5 > div.flex.items-start.justify-between.gap-4',
+      // More generic selectors that might match
+      'div[class*="flex items-start justify-between"]',
+      'div[class*="title_"]',
       '[data-cy="question-title"]',
-      'div[class*="title_"] div',
       '.mr-2.text-lg',
       'div[class*="css"] h4',
       'h4[class*="title"]'
@@ -24,13 +28,18 @@ function extractProblemDetails() {
       const element = document.querySelector(selector);
       if (element) {
         title = element.textContent.trim();
-        if (title) break;
+        if (title) {
+          console.log('Found title using selector:', selector);
+          break;
+        }
       }
     }
 
     // Get problem description - try multiple possible selectors
     let description = '';
     const descriptionSelectors = [
+      // Try to find the description relative to the title
+      'div[class*="content_"]',
       '[data-cy="question-content"]',
       'div[class*="content__"]',
       'div[class*="description_"]',
@@ -41,7 +50,10 @@ function extractProblemDetails() {
       const element = document.querySelector(selector);
       if (element) {
         description = element.textContent.trim();
-        if (description) break;
+        if (description) {
+          console.log('Found description using selector:', selector);
+          break;
+        }
       }
     }
 
@@ -65,11 +77,18 @@ function extractProblemDetails() {
             .join('\n')
             .trim();
         }
-        if (code) break;
+        if (code) {
+          console.log('Found code using selector:', selector);
+          break;
+        }
       }
     }
 
-    console.log('Extracted details:', { title, description: description.substring(0, 100) + '...', code: code.substring(0, 100) + '...' });
+    console.log('Extracted details:', { 
+      title, 
+      description: description.substring(0, 100) + '...', 
+      code: code.substring(0, 100) + '...' 
+    });
 
     return {
       title,
