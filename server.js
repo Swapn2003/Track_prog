@@ -192,12 +192,66 @@ const dsaEntrySchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
 }, { timestamps: true });
 
-// Add a method to get unique topics
+// Target Company Schema
+const targetCompanySchema = new mongoose.Schema({
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
+    name: {
+        type: String,
+        required: true
+    },
+    status: {
+        type: String,
+        enum: ['Planning', 'Preparing', 'Applied', 'Interviewing'],
+        default: 'Planning'
+    },
+    priority: {
+        type: String,
+        enum: ['High', 'Medium', 'Low'],
+        default: 'Medium'
+    },
+    notes: {
+        type: String,
+        default: ''
+    },
+    targetDate: {
+        type: Date
+    },
+    questions: [{
+        name: String,
+        url: String,
+        status: {
+            type: String,
+            enum: ['Not Started', 'In Progress', 'Completed'],
+            default: 'Not Started'
+        },
+        notes: String
+    }],
+    createdAt: {
+        type: Date,
+        default: Date.now
+    },
+    updatedAt: {
+        type: Date,
+        default: Date.now
+    }
+});
+
+targetCompanySchema.pre('save', function(next) {
+    this.updatedAt = Date.now();
+    next();
+});
+
+// Add method to get unique topics
 dsaEntrySchema.statics.getTopics = function(userId) {
     return this.distinct('topic', { userId });
 };
 
 const DSAEntry = mongoose.model('DSAEntry', dsaEntrySchema);
+const TargetCompany = mongoose.model('TargetCompany', targetCompanySchema);
 
 // Routes
 // Get all unique topics
@@ -496,6 +550,146 @@ app.post('/api/topics', authMiddleware, async (req, res) => {
     } catch (error) {
         console.error('Error creating topic:', error);
         res.status(500).json({ message: error.message });
+    }
+});
+
+// Target Companies Routes
+
+// Get all target companies for the user
+app.get('/api/target-companies', authMiddleware, async (req, res) => {
+    try {
+        console.log('Fetching target companies for user:', req.user.userId);
+        
+        const targetCompanies = await TargetCompany.find({ user: req.user.userId })
+            .sort({ updatedAt: -1 });
+            
+        console.log('Found target companies:', targetCompanies.length);
+        
+        if (!targetCompanies || targetCompanies.length === 0) {
+            console.log('No target companies found for user');
+            return res.json([]);  // Return empty array instead of 500 error
+        }
+        
+        res.json(targetCompanies);
+    } catch (err) {
+        console.error('Error fetching target companies:', err);
+        res.status(500).json({ 
+            message: 'Failed to fetch target companies',
+            error: err.message 
+        });
+    }
+});
+
+// Add a new target company
+app.post('/api/target-companies', authMiddleware, async (req, res) => {
+    try {
+        console.log('Creating new target company. Request body:', req.body);
+        const { name, status, priority, notes, targetDate, questions } = req.body;
+        
+        if (!name) {
+            console.log('Company name is required');
+            return res.status(400).json({ message: 'Company name is required' });
+        }
+
+        const targetCompany = new TargetCompany({
+            user: req.user.userId,
+            name,
+            status: status || 'Planning',
+            priority: priority || 'Medium',
+            notes: notes || '',
+            targetDate,
+            questions: questions || []
+        });
+
+        console.log('Saving new target company:', targetCompany);
+        const savedCompany = await targetCompany.save();
+        console.log('Target company saved successfully:', savedCompany._id);
+        
+        res.status(201).json(savedCompany);
+    } catch (err) {
+        console.error('Error creating target company:', err);
+        res.status(500).json({ 
+            message: 'Failed to create target company',
+            error: err.message 
+        });
+    }
+});
+
+// Update a target company
+app.put('/api/target-companies/:id', authMiddleware, async (req, res) => {
+    try {
+        const { name, status, priority, notes, targetDate, questions } = req.body;
+        
+        let targetCompany = await TargetCompany.findById(req.params.id);
+        if (!targetCompany) return res.status(404).json({ msg: 'Target company not found' });
+        
+        // Make sure user owns the target company
+        if (targetCompany.user.toString() !== req.user.userId) {
+            return res.status(401).json({ msg: 'User not authorized' });
+        }
+
+        targetCompany = await TargetCompany.findByIdAndUpdate(
+            req.params.id,
+            {
+                $set: {
+                    name,
+                    status,
+                    priority,
+                    notes,
+                    targetDate,
+                    questions,
+                    updatedAt: Date.now()
+                }
+            },
+            { new: true }
+        );
+
+        res.json(targetCompany);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+    }
+});
+
+// Delete a target company
+app.delete('/api/target-companies/:id', authMiddleware, async (req, res) => {
+    try {
+        const targetCompany = await TargetCompany.findById(req.params.id);
+        if (!targetCompany) return res.status(404).json({ msg: 'Target company not found' });
+        
+        // Make sure user owns the target company
+        if (targetCompany.user.toString() !== req.user.userId) {
+            return res.status(401).json({ msg: 'User not authorized' });
+        }
+
+        await targetCompany.deleteOne();
+        res.json({ msg: 'Target company removed' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+    }
+});
+
+// Add/Update a question in a target company
+app.post('/api/target-companies/:id/questions', authMiddleware, async (req, res) => {
+    try {
+        const { name, url, status, notes } = req.body;
+        
+        const targetCompany = await TargetCompany.findById(req.params.id);
+        if (!targetCompany) return res.status(404).json({ msg: 'Target company not found' });
+        
+        // Make sure user owns the target company
+        if (targetCompany.user.toString() !== req.user.userId) {
+            return res.status(401).json({ msg: 'User not authorized' });
+        }
+
+        targetCompany.questions.push({ name, url, status, notes });
+        await targetCompany.save();
+
+        res.json(targetCompany);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
     }
 });
 

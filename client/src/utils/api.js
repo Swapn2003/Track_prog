@@ -41,6 +41,11 @@ export const post = (url, body) => fetchWithAuth(url, {
     body: JSON.stringify(body)
 });
 
+export const put = (url, body) => fetchWithAuth(url, {
+    method: 'PUT',
+    body: JSON.stringify(body)
+});
+
 export const patch = (url, body) => fetchWithAuth(url, {
     method: 'PATCH',
     body: JSON.stringify(body)
