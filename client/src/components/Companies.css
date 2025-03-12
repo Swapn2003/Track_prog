@@ -1,0 +1,920 @@
+/* Main Container */
+.companies-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: Arial, sans-serif;
+  color: #333;
+  background-color: #f9fafb;
+  min-height: 100vh;
+}
+
+/* Loading State */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 18px;
+  color: #333;
+}
+
+.loading-spinner {
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+/* Error State */
+.error-message {
+  margin: 20px;
+  padding: 20px;
+  background-color: #ffeded;
+  border: 1px solid #f5c6cb;
+  border-radius: 8px;
+  color: #721c24;
+  text-align: center;
+}
+
+/* Header */
+.page-title {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #2c3e50;
+  font-size: 32px;
+  font-weight: 600;
+}
+
+/* Main Content Grid */
+.content-grid {
+  display: grid;
+  grid-template-columns: minmax(250px, 1fr) 3fr;
+  gap: 24px;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  min-height: 500px;
+}
+
+/* Companies Sidebar */
+.companies-sidebar {
+  padding: 20px;
+  border-right: 1px solid #eee;
+  background-color: #f8f9fa;
+  overflow: auto;
+  max-height: 800px;
+}
+
+.sidebar-header {
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 20px;
+  color: #2c3e50;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.company-count {
+  font-size: 14px;
+  color: #6c757d;
+  margin-left: 8px;
+  font-weight: normal;
+}
+
+.companies-list {
+  margin-top: 16px;
+}
+
+.company-card {
+  padding: 16px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border-left: 4px solid transparent;
+}
+
+.company-card.selected {
+  background-color: #e3f2fd;
+  border-left: 4px solid #2196f3;
+}
+
+.company-card:hover:not(.selected) {
+  background-color: #f5f5f5;
+}
+
+.company-name {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.company-name.selected {
+  color: #1976d2;
+}
+
+.company-description {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.company-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+  font-size: 13px;
+  color: #6c757d;
+}
+
+/* Content Area */
+.content-area {
+  padding: 24px;
+}
+
+.company-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #eee;
+}
+
+.company-title {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 24px;
+}
+
+.questions-count {
+  display: inline-block;
+  padding: 6px 12px;
+  background-color: #e3f2fd;
+  color: #1976d2;
+  border-radius: 16px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Questions Grid */
+.questions-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 24px;
+  min-height: 400px;
+}
+
+.questions-list {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 16px;
+  max-height: 600px;
+  overflow: auto;
+}
+
+.questions-list-title {
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 18px;
+  color: #2c3e50;
+}
+
+.question-item {
+  background-color: white;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-left: 3px solid transparent;
+}
+
+.question-item.selected {
+  background-color: #e3f2fd;
+  border-left: 3px solid #2196f3;
+}
+
+.question-item:hover:not(.selected) {
+  background-color: #f5f5f5;
+}
+
+.question-name {
+  font-size: 15px;
+  font-weight: 400;
+  color: #333;
+}
+
+.question-name.selected {
+  font-weight: 600;
+  color: #1976d2;
+}
+
+/* Question Description */
+.question-description {
+  border-radius: 8px;
+  padding: 20px;
+  border: 1px solid #e9ecef;
+  max-height: 600px;
+  overflow: auto;
+}
+
+.question-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.question-title {
+  margin: 0;
+  font-size: 20px;
+  color: #2c3e50;
+}
+
+.leetcode-link {
+  display: inline-block;
+  padding: 8px 16px;
+  background-color: #2196f3;
+  color: white;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.3s;
+}
+
+.leetcode-link:hover {
+  background-color: #1976d2;
+}
+
+.question-content {
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 6px;
+  line-height: 1.6;
+  font-size: 15px;
+  white-space: pre-line;
+  color: #333;
+}
+
+/* Empty States */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  color: #6c757d;
+  padding: 20px;
+  text-align: center;
+}
+
+.empty-state-icon {
+  width: 100px;
+  height: 100px;
+  margin-bottom: 24px;
+  opacity: 0.5;
+}
+
+.empty-state-title {
+  margin: 0 0 16px 0;
+  color: #495057;
+  font-size: 24px;
+}
+
+.empty-state-message {
+  margin: 0;
+  max-width: 400px;
+  font-size: 16px;
+}
+
+/* No Questions Message */
+.no-questions {
+  padding: 24px;
+  text-align: center;
+  color: #6c757d;
+  background-color: white;
+  border-radius: 6px;
+}
+
+/* Companies Sidebar */
+.companies-sidebar {
+  padding: 20px;
+  border-right: 1px solid #eee;
+  background-color: #f8f9fa;
+  overflow: auto;
+  max-height: 800px;
+}
+
+.sidebar-top {
+  position: sticky;
+  top: 0;
+  background-color: #f8f9fa;
+  padding-bottom: 16px;
+  z-index: 1;
+}
+
+.search-container {
+  position: relative;
+  margin-top: 16px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px 32px 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s;
+  background-color: white;
+  box-sizing: border-box;
+}
+
+.search-input:focus {
+  border-color: #2196f3;
+  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+}
+
+.clear-search {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.clear-search:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: #333;
+}
+
+.no-results {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+  background-color: white;
+  border-radius: 6px;
+  margin-top: 16px;
+  font-size: 14px;
+}
+
+/* Add these media queries at the end of the file */
+
+/* Mobile Responsive Styles */
+@media screen and (max-width: 768px) {
+  .companies-container {
+    padding: 10px;
+  }
+
+  .page-title {
+    font-size: 24px;
+    margin-bottom: 15px;
+  }
+
+  .content-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .companies-sidebar {
+    max-height: 300px;
+    border-right: none;
+    border-bottom: 1px solid #eee;
+  }
+
+  .questions-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .questions-list {
+    max-height: 300px;
+  }
+
+  .question-description {
+    max-height: 400px;
+  }
+
+  .company-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .company-title {
+    font-size: 20px;
+  }
+
+  .questions-count {
+    font-size: 12px;
+  }
+
+  .company-card {
+    padding: 12px;
+  }
+
+  .company-meta {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .question-header {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .leetcode-link {
+    width: 100%;
+    text-align: center;
+  }
+
+  .empty-state {
+    height: 300px;
+    padding: 15px;
+  }
+
+  .empty-state-icon {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 16px;
+  }
+
+  .empty-state-title {
+    font-size: 20px;
+  }
+
+  .empty-state-message {
+    font-size: 14px;
+  }
+
+  .loading-container {
+    height: 50vh;
+  }
+
+  .loading-spinner svg {
+    width: 30px;
+    height: 30px;
+  }
+
+  .error-message {
+    margin: 15px;
+    padding: 15px;
+    font-size: 14px;
+  }
+
+  .sidebar-top {
+    position: static;
+    padding-bottom: 12px;
+  }
+
+  .companies-sidebar {
+    overflow: visible;
+    max-height: none;
+  }
+
+  .companies-list {
+    max-height: 300px;
+    overflow: auto;
+  }
+
+  .company-card,
+  .question-item,
+  .leetcode-link,
+  .clear-search {
+    min-height: 44px;
+  }
+
+  .search-input {
+    min-height: 44px;
+  }
+}
+
+/* Small Mobile Screens */
+@media screen and (max-width: 480px) {
+  .companies-container {
+    padding: 8px;
+  }
+
+  .page-title {
+    font-size: 20px;
+    margin-bottom: 12px;
+  }
+
+  .company-card {
+    padding: 10px;
+  }
+
+  .company-name {
+    font-size: 16px;
+  }
+
+  .company-description {
+    font-size: 12px;
+  }
+
+  .questions-list-title {
+    font-size: 16px;
+  }
+
+  .question-name {
+    font-size: 14px;
+  }
+
+  .question-content {
+    font-size: 14px;
+    padding: 15px;
+  }
+
+  .search-input {
+    padding: 8px 28px 8px 10px;
+    font-size: 13px;
+  }
+
+  .clear-search {
+    right: 6px;
+    font-size: 16px;
+  }
+}
+
+/* Tablet Screens */
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+  .companies-container {
+    padding: 15px;
+  }
+
+  .content-grid {
+    grid-template-columns: 300px 1fr;
+    gap: 20px;
+  }
+
+  .questions-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .questions-list {
+    max-height: 400px;
+  }
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 0.5rem;
+}
+
+.tab {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  background: none;
+  font-size: 1rem;
+  color: #666;
+  cursor: pointer;
+  border-radius: 4px 4px 0 0;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.tab:hover {
+  color: #2196f3;
+}
+
+.tab.active {
+  color: #2196f3;
+  font-weight: 600;
+}
+
+.tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -0.5rem;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #2196f3;
+}
+
+/* Target Companies */
+.target-companies {
+  padding: 1rem;
+}
+
+.target-companies-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.add-company-button {
+  padding: 0.75rem 1.5rem;
+  background-color: #2196f3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.add-company-button:hover {
+  background-color: #1976d2;
+}
+
+.add-target-form {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+.add-target-form h3 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  color: #333;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: #2196f3;
+  outline: none;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.submit-button,
+.cancel-button {
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.submit-button {
+  background-color: #2196f3;
+  color: white;
+  border: none;
+}
+
+.submit-button:hover {
+  background-color: #1976d2;
+}
+
+.cancel-button {
+  background-color: white;
+  color: #666;
+  border: 1px solid #e0e0e0;
+}
+
+.cancel-button:hover {
+  background-color: #f5f5f5;
+}
+
+.target-companies-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.target-company-card {
+  background-color: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.target-company-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.target-company-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.target-company-header h3 {
+  margin: 0;
+  color: #333;
+  font-size: 1.25rem;
+}
+
+.target-company-badges {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.status-badge,
+.priority-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.status-badge {
+  background-color: #e3f2fd;
+  color: #1976d2;
+}
+
+.status-badge.planning { background-color: #e3f2fd; color: #1976d2; }
+.status-badge.preparing { background-color: #e8f5e9; color: #2e7d32; }
+.status-badge.applied { background-color: #fff3e0; color: #f57c00; }
+.status-badge.interviewing { background-color: #fce4ec; color: #c2185b; }
+
+.priority-badge {
+  background-color: #f5f5f5;
+  color: #666;
+}
+
+.priority-badge.high { background-color: #ffebee; color: #c62828; }
+.priority-badge.medium { background-color: #fff3e0; color: #f57c00; }
+.priority-badge.low { background-color: #e8f5e9; color: #2e7d32; }
+
+.target-company-notes {
+  color: #666;
+  margin: 1rem 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.target-date {
+  color: #666;
+  font-size: 0.875rem;
+  margin: 1rem 0;
+}
+
+.target-company-questions {
+  margin: 1rem 0;
+}
+
+.target-company-questions h4 {
+  margin: 0 0 0.5rem 0;
+  color: #333;
+  font-size: 1rem;
+}
+
+.questions-progress {
+  margin-top: 0.5rem;
+}
+
+.progress-bar {
+  height: 6px;
+  background-color: #e0e0e0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: #2196f3;
+  transition: width 0.3s ease;
+}
+
+.target-company-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.target-company-actions button {
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.target-company-actions button:first-child {
+  background-color: #ffebee;
+  color: #c62828;
+  border: none;
+}
+
+.target-company-actions button:first-child:hover {
+  background-color: #ef5350;
+  color: white;
+}
+
+.target-company-actions button:last-child {
+  background-color: #e3f2fd;
+  color: #1976d2;
+  border: none;
+}
+
+.target-company-actions button:last-child:hover {
+  background-color: #2196f3;
+  color: white;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .tabs {
+    gap: 0.5rem;
+  }
+
+  .tab {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+  }
+
+  .target-companies-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .add-target-form {
+    padding: 1.5rem;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .form-actions button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .target-company-header {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .target-company-badges {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+.edit-form {
+  border-left: 4px solid #2196f3;
+}
+
+.edit-form h3 {
+  color: #2196f3;
+} 

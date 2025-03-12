@@ -9,6 +9,7 @@ import Settings from './components/Settings';
 import Home from './components/Home';
 import Navbar from './components/Navbar';
 import { AppProvider } from './context/AppContext';
+import Companies from './components/Companies';
 import './App.css';
 
 function App() {
@@ -56,6 +57,11 @@ function App() {
             <Route path="/settings" element={
               <ProtectedRoute>
                 <Settings />
+              </ProtectedRoute>
+            } />
+            <Route path="/companies" element={
+              <ProtectedRoute>
+                <Companies />
               </ProtectedRoute>
             } />
           </Routes>
