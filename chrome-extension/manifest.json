@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "DSA Progress Tracker",
-  "version": "1.0",
-  "description": "Track LeetCode problems in your DSA Progress Tracker",
+  "version": "1.1",
+  "description": "Track LeetCode problems in your DSA Progress Tracker with multi-topic support",
   "permissions": [
     "activeTab",
     "storage",

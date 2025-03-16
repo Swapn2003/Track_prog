@@ -179,6 +179,7 @@ app.get('/api/auth/user', authMiddleware, async (req, res) => {
 // DSA Entry Schema
 const dsaEntrySchema = new mongoose.Schema({
     topic: String,
+    subtopics: [String], // Array of subtopic tags
     title: String,
     description: String,
     problemLink: String,
@@ -250,6 +251,11 @@ dsaEntrySchema.statics.getTopics = function(userId) {
     return this.distinct('topic', { userId });
 };
 
+// Add method to get unique subtopics for a topic
+dsaEntrySchema.statics.getSubtopics = function(userId, topic) {
+    return this.distinct('subtopics', { userId, topic });
+};
+
 const DSAEntry = mongoose.model('DSAEntry', dsaEntrySchema);
 const TargetCompany = mongoose.model('TargetCompany', targetCompanySchema);
 
@@ -275,6 +281,21 @@ app.get('/api/entries/topic/:topic', authMiddleware, async (req, res) => {
         res.json(entries);
     } catch (error) {
         console.error('Error fetching entries by topic:', error);
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Get entries by topic and subtopic
+app.get('/api/entries/topic/:topic/subtopic/:subtopic', authMiddleware, async (req, res) => {
+    try {
+        const entries = await DSAEntry.find({ 
+            topic: req.params.topic,
+            subtopics: req.params.subtopic,
+            userId: req.user.userId 
+        }).sort({ createdAt: -1 });
+        res.json(entries);
+    } catch (error) {
+        console.error('Error fetching entries by topic and subtopic:', error);
         res.status(500).json({ message: error.message });
     }
 });
@@ -351,6 +372,7 @@ app.post('/api/entries', authMiddleware, async (req, res) => {
 
         const {
             topic,
+            subtopics,
             title,
             description,
             problemLink,
@@ -361,7 +383,7 @@ app.post('/api/entries', authMiddleware, async (req, res) => {
             isBasic
         } = req.body;
 
-        console.log('Entry data received:', { topic, title });
+        console.log('Entry data received:', { topic, title, subtopics });
 
         // First, verify Google Sheets access
         console.log('Verifying Google Sheets access...');
@@ -393,6 +415,7 @@ app.post('/api/entries', authMiddleware, async (req, res) => {
         // Create MongoDB entry
         const entry = new DSAEntry({
             topic,
+            subtopics: subtopics || [],
             title,
             description,
             problemLink,
@@ -439,12 +462,15 @@ app.patch('/api/entries/:id', authMiddleware, async (req, res) => {
             return res.status(404).json({ message: 'Entry not found' });
         }
 
-        // Only allow updating isStarred and isBasic fields
+        // Allow updating isStarred, isBasic, and subtopics fields
         if ('isStarred' in updates) {
             entry.isStarred = updates.isStarred;
         }
         if ('isBasic' in updates) {
             entry.isBasic = updates.isBasic;
+        }
+        if ('subtopics' in updates) {
+            entry.subtopics = updates.subtopics;
         }
 
         // Update in Google Sheet if needed
@@ -690,6 +716,18 @@ app.post('/api/target-companies/:id/questions', authMiddleware, async (req, res)
     } catch (err) {
         console.error(err);
         res.status(500).send('Server Error');
+    }
+});
+
+// Get all unique subtopics for a topic
+app.get('/api/topics/:topic/subtopics', authMiddleware, async (req, res) => {
+    try {
+        const topic = req.params.topic;
+        const subtopics = await DSAEntry.getSubtopics(req.user.userId, topic);
+        res.json(subtopics);
+    } catch (error) {
+        console.error('Error fetching subtopics:', error);
+        res.status(500).json({ message: error.message });
     }
 });
 

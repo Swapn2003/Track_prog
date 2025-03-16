@@ -20,6 +20,9 @@
       border: 1px solid #ddd;
       border-radius: 4px;
     }
+    select[multiple] {
+      height: 100px;
+    }
     button {
       background-color: #1a73e8;
       color: white;
@@ -39,6 +42,11 @@
       color: green;
       font-size: 12px;
     }
+    .topic-help {
+      font-size: 11px;
+      color: #666;
+      margin-top: 2px;
+    }
   </style>
 </head>
 <body>
@@ -50,9 +58,12 @@
       <button id="loginBtn">Login</button>
     </div>
     <div id="problemForm">
-      <select id="topic">
-        <option value="">Select Topic</option>
+      <label for="topic">Topics (hold Ctrl/Cmd to select multiple)</label>
+      <select id="topic" multiple>
+        <option value="">Loading topics...</option>
       </select>
+      <div class="topic-help">Hold Ctrl (Windows) or Cmd (Mac) to select multiple topics</div>
+      
       <input type="text" id="title" placeholder="Problem Title" readonly>
       <textarea id="description" placeholder="Problem Description" rows="3"></textarea>
       <input type="text" id="problemLink" placeholder="Problem Link" readonly>

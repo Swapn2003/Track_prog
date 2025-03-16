@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Topics from './components/Topics';
 import TopicEntries from './components/TopicEntries';
+import SubtopicEntries from './components/SubtopicEntries';
 import AddEntry from './components/AddEntry';
 import Login from './components/Login';
 import Signup from './components/Signup';
@@ -47,6 +48,11 @@ function App() {
             <Route path="/topic/:topic" element={
               <ProtectedRoute>
                 <TopicEntries />
+              </ProtectedRoute>
+            } />
+            <Route path="/topic/:topic/subtopic/:subtopic" element={
+              <ProtectedRoute>
+                <SubtopicEntries />
               </ProtectedRoute>
             } />
             <Route path="/add" element={

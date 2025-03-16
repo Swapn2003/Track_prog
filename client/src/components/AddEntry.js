@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { get, post } from '../utils/api';
+import SubtopicManager from './SubtopicManager';
 import './AddEntry.css';
 
 const AddEntry = () => {
@@ -17,7 +18,8 @@ const AddEntry = () => {
         approach: '',
         code: '',
         timeComplexity: '',
-        spaceComplexity: ''
+        spaceComplexity: '',
+        subtopics: []
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -41,6 +43,13 @@ const AddEntry = () => {
         setFormData(prev => ({
             ...prev,
             [name]: value
+        }));
+    };
+
+    const handleSubtopicsUpdate = (updatedSubtopics) => {
+        setFormData(prev => ({
+            ...prev,
+            subtopics: updatedSubtopics
         }));
     };
 
@@ -86,6 +95,16 @@ const AddEntry = () => {
                         ))}
                     </datalist>
                 </div>
+
+                {formData.topic && (
+                    <div className="form-group subtopic-container">
+                        <SubtopicManager 
+                            topic={formData.topic}
+                            initialSubtopics={formData.subtopics}
+                            onUpdate={handleSubtopicsUpdate}
+                        />
+                    </div>
+                )}
 
                 <div className="form-group">
                     <label htmlFor="title">Title</label>

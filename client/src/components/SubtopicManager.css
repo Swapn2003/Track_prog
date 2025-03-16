@@ -1,0 +1,191 @@
+.subtopic-manager {
+  margin: 15px 0;
+  padding: 15px;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.subtopic-manager h4 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.subtopic-manager h5 {
+  margin-top: 15px;
+  margin-bottom: 10px;
+  font-size: 0.95rem;
+  color: #555;
+}
+
+.error-message {
+  color: #d9534f;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+}
+
+.subtopics-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 15px;
+  min-height: 30px;
+}
+
+.subtopic-tag {
+  display: inline-flex;
+  align-items: center;
+  background-color: #e9ecef;
+  border-radius: 16px;
+  padding: 4px 12px;
+  font-size: 0.85rem;
+  color: #495057;
+}
+
+.remove-subtopic {
+  background: none;
+  border: none;
+  color: #6c757d;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0 0 0 5px;
+  margin-left: 5px;
+  line-height: 1;
+}
+
+.remove-subtopic:hover {
+  color: #dc3545;
+}
+
+.no-subtopics {
+  color: #6c757d;
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+.add-subtopic-form {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  align-items: flex-start;
+}
+
+.input-with-suggestions {
+  position: relative;
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.subtopic-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  box-sizing: border-box;
+}
+
+.add-subtopic-button {
+  padding: 8px 15px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.add-subtopic-button:hover {
+  background-color: #0069d9;
+}
+
+.suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: white;
+  border: 1px solid #ced4da;
+  border-radius: 0 0 4px 4px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.suggestion-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.suggestion-item:hover {
+  background-color: #f8f9fa;
+}
+
+.available-subtopics {
+  margin-top: 15px;
+}
+
+.subtopics-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.available-subtopic {
+  background-color: #f1f3f5;
+  border: 1px dashed #ced4da;
+  border-radius: 16px;
+  padding: 4px 12px;
+  font-size: 0.85rem;
+  color: #495057;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.available-subtopic:hover {
+  background-color: #e9ecef;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .add-subtopic-form {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .input-with-suggestions {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  
+  .add-subtopic-button {
+    align-self: flex-start;
+    width: auto;
+  }
+  
+  .subtopics-grid {
+    gap: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .subtopic-manager {
+    padding: 10px;
+  }
+  
+  .subtopic-input {
+    font-size: 0.85rem;
+    padding: 6px 10px;
+  }
+  
+  .add-subtopic-button {
+    font-size: 0.85rem;
+    padding: 6px 12px;
+  }
+} 

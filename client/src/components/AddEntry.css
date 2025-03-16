@@ -40,6 +40,7 @@
 
 .form-group {
     margin-bottom: 1.5rem;
+    width: 100%;
 }
 
 .form-group label {
@@ -132,6 +133,12 @@
     text-align: center;
 }
 
+.subtopic-container {
+    margin: 1rem 0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
 @media (max-width: 768px) {
     .add-entry-container {
         padding: 1rem;
@@ -157,5 +164,9 @@
 
     .form-actions {
         flex-direction: column;
+    }
+
+    .subtopic-container {
+        padding: 0;
     }
 } 

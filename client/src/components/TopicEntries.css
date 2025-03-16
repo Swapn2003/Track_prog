@@ -14,9 +14,15 @@
 
 .search-section {
     margin: 1rem 0 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
 }
 
 .search-input {
+    flex: 1;
+    min-width: 250px;
     width: 100%;
     padding: 0.75rem 1rem;
     border: 2px solid #e0e0e0;
@@ -293,6 +299,81 @@
     color: #27ae60;
 }
 
+.subtopic-filter {
+    min-width: 200px;
+}
+
+.subtopic-select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 25px;
+    font-size: 1rem;
+    background: white;
+    cursor: pointer;
+}
+
+.subtopic-select:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.entry-subtopics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0.75rem 0;
+    align-items: center;
+}
+
+.subtopic-tag-display {
+    background-color: #f1f3f5;
+    border-radius: 16px;
+    padding: 4px 12px;
+    font-size: 0.8rem;
+    color: #495057;
+    margin-bottom: 0.25rem;
+}
+
+.edit-subtopics-button,
+.add-subtopics-button,
+.close-subtopics-button {
+    background: none;
+    border: 1px solid #e0e0e0;
+    padding: 0.3rem 0.6rem;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    color: #666;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    margin: 0.25rem 0;
+}
+
+.edit-subtopics-button:hover,
+.add-subtopics-button:hover,
+.close-subtopics-button:hover {
+    background-color: #f8f9fa;
+    border-color: #3498db;
+    color: #3498db;
+}
+
+.add-subtopics-button {
+    margin: 0.5rem 0;
+    display: inline-block;
+}
+
+.edit-subtopics-container {
+    margin: 1rem 0;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 5px;
+    border: 1px solid #e0e0e0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
 @media (max-width: 768px) {
     .topic-entries-container {
         padding: 1rem;
@@ -335,5 +416,30 @@
 
     .problem-actions {
         flex-wrap: wrap;
+    }
+
+    .search-section {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .subtopic-filter {
+        width: 100%;
+    }
+    
+    .entry-subtopics {
+        flex-direction: column;
+        align-items: flex-start;
+        width: 100%;
+    }
+    
+    .subtopic-tag-display {
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .edit-subtopics-button {
+        margin-top: 0.5rem;
+        align-self: flex-start;
     }
 } 

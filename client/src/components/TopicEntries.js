@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { get, patch } from '../utils/api';
+import SubtopicManager from './SubtopicManager';
+import SubtopicFilter from './SubtopicFilter';
 import './TopicEntries.css';
 
 const TopicEntries = () => {
@@ -12,6 +14,9 @@ const TopicEntries = () => {
     const [expandedEntries, setExpandedEntries] = useState({});
     const [searchTerm, setSearchTerm] = useState('');
     const [activeTab, setActiveTab] = useState('all');
+    const [availableSubtopics, setAvailableSubtopics] = useState([]);
+    const [selectedSubtopic, setSelectedSubtopic] = useState('');
+    const [editingSubtopics, setEditingSubtopics] = useState(null);
 
     useEffect(() => {
         const fetchEntries = async () => {
@@ -25,7 +30,17 @@ const TopicEntries = () => {
             }
         };
 
+        const fetchSubtopics = async () => {
+            try {
+                const data = await get(`/api/topics/${encodeURIComponent(topic)}/subtopics`);
+                setAvailableSubtopics(data);
+            } catch (err) {
+                console.error('Error fetching subtopics:', err);
+            }
+        };
+
         fetchEntries();
+        fetchSubtopics();
     }, [topic]);
 
     const toggleExpand = (entryId, level) => {
@@ -72,11 +87,25 @@ const TopicEntries = () => {
         }
     };
 
+    const handleSubtopicsUpdate = (updatedSubtopics) => {
+        if (!editingSubtopics) return;
+        
+        // Update the entry in the local state
+        setEntries(entries.map(e => 
+            e._id === editingSubtopics ? { ...e, subtopics: updatedSubtopics } : e
+        ));
+    };
+
     const filteredEntries = entries.filter(entry => {
         const matchesSearch = entry.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             entry.description.toLowerCase().includes(searchTerm.toLowerCase());
         
         if (!matchesSearch) return false;
+
+        // Filter by subtopic if one is selected
+        if (selectedSubtopic && (!entry.subtopics || !entry.subtopics.includes(selectedSubtopic))) {
+            return false;
+        }
 
         switch (activeTab) {
             case 'starred':
@@ -105,6 +134,8 @@ const TopicEntries = () => {
                 </button>
             </div>
             
+            <SubtopicFilter />
+            
             <div className="search-section">
                 <input
                     type="text"
@@ -113,6 +144,21 @@ const TopicEntries = () => {
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
+                
+                {availableSubtopics.length > 0 && (
+                    <div className="subtopic-filter">
+                        <select 
+                            value={selectedSubtopic} 
+                            onChange={(e) => setSelectedSubtopic(e.target.value)}
+                            className="subtopic-select"
+                        >
+                            <option value="">All Subtopics</option>
+                            {availableSubtopics.map(subtopic => (
+                                <option key={subtopic} value={subtopic}>{subtopic}</option>
+                            ))}
+                        </select>
+                    </div>
+                )}
             </div>
 
             <div className="tabs-container">
@@ -160,6 +206,52 @@ const TopicEntries = () => {
                                 </div>
                                 <h2>{entry.title}</h2>
                                 <p className="description">{entry.description}</p>
+                                
+                                {/* Display subtopics */}
+                                {entry.subtopics && entry.subtopics.length > 0 && (
+                                    <div className="entry-subtopics">
+                                        {entry.subtopics.map(subtopic => (
+                                            <span key={subtopic} className="subtopic-tag-display">
+                                                {subtopic}
+                                            </span>
+                                        ))}
+                                        <button 
+                                            className="edit-subtopics-button"
+                                            onClick={() => setEditingSubtopics(entry._id)}
+                                        >
+                                            Edit
+                                        </button>
+                                    </div>
+                                )}
+                                
+                                {/* Edit subtopics */}
+                                {editingSubtopics === entry._id && (
+                                    <div className="edit-subtopics-container">
+                                        <SubtopicManager 
+                                            topic={topic}
+                                            entryId={entry._id}
+                                            initialSubtopics={entry.subtopics || []}
+                                            onUpdate={handleSubtopicsUpdate}
+                                        />
+                                        <button 
+                                            className="close-subtopics-button"
+                                            onClick={() => setEditingSubtopics(null)}
+                                        >
+                                            Done
+                                        </button>
+                                    </div>
+                                )}
+                                
+                                {/* If no subtopics, show add button */}
+                                {(!entry.subtopics || entry.subtopics.length === 0) && editingSubtopics !== entry._id && (
+                                    <button 
+                                        className="add-subtopics-button"
+                                        onClick={() => setEditingSubtopics(entry._id)}
+                                    >
+                                        + Add Subtopics
+                                    </button>
+                                )}
+                                
                                 <a href={entry.problemLink} target="_blank" rel="noopener noreferrer" className="problem-link">
                                     Solve Problem →
                                 </a>

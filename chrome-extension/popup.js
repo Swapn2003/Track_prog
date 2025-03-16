@@ -48,15 +48,61 @@ async function loadTopics() {
     const topics = await response.json();
     
     const topicSelect = document.getElementById('topic');
-    topicSelect.innerHTML = '<option value="">Select Topic</option>';
-    topics.forEach(topic => {
+    topicSelect.innerHTML = ''; // Clear the loading option
+    
+    if (topics.length === 0) {
       const option = document.createElement('option');
-      option.value = topic;
-      option.textContent = topic;
+      option.value = "";
+      option.textContent = "No topics found - add one below";
       topicSelect.appendChild(option);
-    });
+    } else {
+      topics.forEach(topic => {
+        const option = document.createElement('option');
+        option.value = topic;
+        option.textContent = topic;
+        topicSelect.appendChild(option);
+      });
+    }
+    
+    // Add option to create a new topic
+    const newTopicOption = document.createElement('option');
+    newTopicOption.value = "new_topic";
+    newTopicOption.textContent = "➕ Add New Topic";
+    newTopicOption.style.fontWeight = "bold";
+    topicSelect.appendChild(newTopicOption);
+    
+    // Add event listener for the new topic option
+    topicSelect.addEventListener('change', handleTopicChange);
   } catch (error) {
     showMessage('Failed to load topics', true);
+  }
+}
+
+// Handle topic change to show new topic input if needed
+function handleTopicChange(e) {
+  const topicSelect = document.getElementById('topic');
+  const selectedOptions = Array.from(topicSelect.selectedOptions);
+  
+  // Check if "Add New Topic" is selected
+  if (selectedOptions.some(option => option.value === 'new_topic')) {
+    // Prompt for new topic name
+    const newTopic = prompt('Enter new topic name:');
+    if (newTopic && newTopic.trim()) {
+      // Add the new topic to the dropdown
+      const option = document.createElement('option');
+      option.value = newTopic.trim();
+      option.textContent = newTopic.trim();
+      
+      // Insert before the "Add New Topic" option
+      topicSelect.insertBefore(option, topicSelect.lastChild);
+      
+      // Select the new topic and deselect "Add New Topic"
+      option.selected = true;
+      topicSelect.lastChild.selected = false;
+    } else {
+      // If canceled or empty, deselect "Add New Topic"
+      topicSelect.lastChild.selected = false;
+    }
   }
 }
 
@@ -113,8 +159,19 @@ async function getCurrentProblem() {
 
 // Save problem to DSA tracker
 document.getElementById('saveBtn')?.addEventListener('click', async () => {
-  const problemData = {
-    topic: document.getElementById('topic').value,
+  // Get selected topics
+  const topicSelect = document.getElementById('topic');
+  const selectedTopics = Array.from(topicSelect.selectedOptions).map(option => option.value);
+  
+  // Remove any "Add New Topic" option from the selection
+  const validTopics = selectedTopics.filter(topic => topic !== 'new_topic' && topic !== '');
+  
+  if (validTopics.length === 0) {
+    showMessage('Please select at least one topic', true);
+    return;
+  }
+  
+  const commonData = {
     title: document.getElementById('title').value,
     description: document.getElementById('description').value,
     problemLink: document.getElementById('problemLink').value,
@@ -125,30 +182,48 @@ document.getElementById('saveBtn')?.addEventListener('click', async () => {
     isBasic: document.getElementById('isBasic').checked
   };
 
-  if (!problemData.topic) {
-    showMessage('Please select a topic', true);
-    return;
-  }
-
   try {
-    const response = await fetch(`${API_URL}/api/entries`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      },
-      body: JSON.stringify(problemData)
+    showMessage('Saving problem...', false);
+    
+    // Create an array of promises for each topic
+    const savePromises = validTopics.map(topic => {
+      const problemData = {
+        ...commonData,
+        topic
+      };
+      
+      return fetch(`${API_URL}/api/entries`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(problemData)
+      });
     });
-
-    const data = await response.json();
-    if (response.ok) {
-      showMessage('Problem saved successfully!', false);
+    
+    // Wait for all save operations to complete
+    const responses = await Promise.all(savePromises);
+    
+    // Check if all responses were successful
+    const allSuccessful = responses.every(response => response.ok);
+    
+    if (allSuccessful) {
+      showMessage(`Problem saved successfully to ${validTopics.length} topic${validTopics.length > 1 ? 's' : ''}!`, false);
       setTimeout(() => window.close(), 1500);
     } else {
-      showMessage(data.message, true);
+      // Get error messages from failed responses
+      const errorMessages = await Promise.all(
+        responses.filter(r => !r.ok).map(async r => {
+          const data = await r.json();
+          return data.message || 'Unknown error';
+        })
+      );
+      
+      showMessage(`Failed to save to some topics: ${errorMessages.join(', ')}`, true);
     }
   } catch (error) {
-    showMessage('Failed to save problem', true);
+    showMessage('Failed to save problem: ' + error.message, true);
   }
 });
 
