@@ -38,6 +38,9 @@ const Companies = () => {
     
     const fetchData = async () => {
       try {
+        // Load even fewer companies initially for extremely memory-constrained environments
+        const initialCompanyLimit = 30; // Reduced from 50
+        
         // Fetch LeetCode data
         const response = await axios.get(
           'https://raw.githubusercontent.com/ssavi-ict/LeetCode-Which-Company/main/data/company_info.json',
@@ -48,29 +51,71 @@ const Companies = () => {
           throw new Error('Invalid response from LeetCode data source');
         }
         
+        // Instead of keeping all data in memory, just extract the top companies
+        // This is a more aggressive memory optimization for build environments
         const data = response.data;
-        const processedCompanies = {};
-        const uniqueCompanies = new Set();
+        const companyFrequency = {};
         
-        // Process companies in chunks to avoid blocking the main thread
-        const chunkSize = 1000;
+        // First, just count frequency of each company mention
+        Object.values(data).forEach(details => {
+          if (Array.isArray(details) && details.length > 1) {
+            const companyName = details[1];
+            if (companyName) {
+              companyFrequency[companyName] = (companyFrequency[companyName] || 0) + 1;
+            }
+          }
+        });
+        
+        // Sort companies by frequency
+        const sortedCompanies = Object.entries(companyFrequency)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, initialCompanyLimit)
+          .map(([name, count]) => name);
+        
+        // Now process only questions for top companies
+        const processedCompanies = {};
+        const uniqueCompanies = new Set(sortedCompanies);
+        
+        // Reduce chunk size further for even lower memory usage
+        const chunkSize = 250; 
         const entries = Object.entries(data);
         
-        // Process data in smaller chunks
+        // Update UI immediately with empty placeholders
+        const companyList = Array.from(uniqueCompanies).map((name, index) => ({
+          id: index + 1,
+          name: name,
+          description: `${name} is a company with questions on LeetCode.`,
+          location: 'Various Locations',
+          industry: 'Technology',
+        }));
+        
+        setCompanies(companyList);
+        setLoading(false);
+        
+        // Process data in smaller chunks with breaks between processing
         for (let i = 0; i < entries.length; i += chunkSize) {
+          if (signal.aborted) {
+            throw new Error('Request aborted');
+          }
+          
           const chunk = entries.slice(i, i + chunkSize);
           
-          // Use setTimeout to allow other tasks to run
+          // Use setTimeout with 0ms to yield to the event loop
           await new Promise(resolve => {
             setTimeout(() => {
               chunk.forEach(([url, details]) => {
+                if (!Array.isArray(details) || details.length < 2) return;
+                
                 const [questionName, companyName] = details;
-                uniqueCompanies.add(companyName);
+                
+                // Skip if not in our top companies list to save memory
+                if (!companyName || !uniqueCompanies.has(companyName)) return;
                 
                 if (!processedCompanies[companyName]) {
                   processedCompanies[companyName] = [];
                 }
                 
+                // Store minimal data
                 processedCompanies[companyName].push({
                   name: questionName,
                   url: url
@@ -80,29 +125,18 @@ const Companies = () => {
             }, 0);
           });
           
-          // Check if the request was aborted
-          if (signal.aborted) {
-            throw new Error('Request aborted');
-          }
+          // Give the browser a longer break after each chunk
+          // This helps prevent memory pressure during build
+          await new Promise(resolve => setTimeout(resolve, 10));
         }
         
-        // Convert to array only after all processing is done
-        const companyList = Array.from(uniqueCompanies).map((name, index) => ({
-          id: index + 1,
-          name: name,
-          description: `${name} is a company with ${processedCompanies[name].length} LeetCode questions.`,
-          location: 'Various Locations',
-          industry: 'Technology',
-        }));
-        
-        setCompanies(companyList);
+        // Update company questions data
         setCompanyQuestions(processedCompanies);
 
         // Fetch target companies
         console.log('Fetching target companies...');
         try {
           const targetResponse = await get('/api/target-companies', { signal });
-          console.log('Target companies response:', targetResponse);
           
           // The response might be the data array directly or in a data property
           if (Array.isArray(targetResponse)) {

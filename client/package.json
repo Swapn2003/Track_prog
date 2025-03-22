@@ -22,9 +22,10 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts --max-old-space-size=4096 start",
-    "build": "react-scripts --max-old-space-size=4096 build",
-    "test": "react-scripts test",
+    "start": "cross-env NODE_OPTIONS=\"--max-old-space-size=2048\" craco start",
+    "build": "cross-env NODE_OPTIONS=\"--max-old-space-size=512\" GENERATE_SOURCEMAP=false CI=false craco build --max_old_space_size=512",
+    "build:analyze": "cross-env NODE_OPTIONS=\"--max-old-space-size=512\" GENERATE_SOURCEMAP=false ANALYZE=true CI=false craco build --max_old_space_size=512",
+    "test": "craco test",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -44,5 +45,17 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@babel/preset-env": "^7.26.9",
+    "@babel/preset-react": "^7.26.3",
+    "@craco/craco": "^7.1.0",
+    "core-js": "^3.41.0",
+    "cross-env": "^7.0.3",
+    "postcss-flexbugs-fixes": "^5.0.2",
+    "postcss-preset-env": "^9.6.0",
+    "terser-webpack-plugin": "^5.3.14",
+    "webpack-bundle-analyzer": "^4.10.2",
+    "webpackbar": "^5.0.2"
   }
 }
