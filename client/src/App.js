@@ -12,7 +12,6 @@ import Navbar from './components/Navbar';
 import { AppProvider } from './context/AppContext';
 import Companies from './components/Companies';
 import AllProblems from './components/AllProblems';
-import CompaniesPage from './pages/CompaniesPage';
 import './App.css';
 
 function App() {
@@ -70,11 +69,6 @@ function App() {
             <Route path="/companies" element={
               <ProtectedRoute>
                 <Companies />
-              </ProtectedRoute>
-            } />
-            <Route path="/companies-new" element={
-              <ProtectedRoute>
-                <CompaniesPage />
               </ProtectedRoute>
             } />
             <Route path="/all-problems" element={
