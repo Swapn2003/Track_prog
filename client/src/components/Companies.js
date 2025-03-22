@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import { get, post, put, del } from '../utils/api';
 import './Companies.css';
@@ -27,36 +27,66 @@ const Companies = () => {
     questions: []
   });
 
-  const forceRefresh = () => {
+  const forceRefresh = useCallback(() => {
     setRefreshKey(prevKey => prevKey + 1);
-  };
+  }, []);
 
   useEffect(() => {
+    // Create a controller for the fetch requests
+    const controller = new AbortController();
+    const signal = controller.signal;
+    
     const fetchData = async () => {
       try {
         // Fetch LeetCode data
         const response = await axios.get(
-          'https://raw.githubusercontent.com/ssavi-ict/LeetCode-Which-Company/main/data/company_info.json'
+          'https://raw.githubusercontent.com/ssavi-ict/LeetCode-Which-Company/main/data/company_info.json',
+          { signal }
         );
+        
+        if (!response || !response.data) {
+          throw new Error('Invalid response from LeetCode data source');
+        }
         
         const data = response.data;
         const processedCompanies = {};
         const uniqueCompanies = new Set();
         
-        Object.entries(data).forEach(([url, details]) => {
-          const [questionName, companyName] = details;
-          uniqueCompanies.add(companyName);
-          
-          if (!processedCompanies[companyName]) {
-            processedCompanies[companyName] = [];
-          }
-          
-          processedCompanies[companyName].push({
-            name: questionName,
-            url: url
-          });
-        });
+        // Process companies in chunks to avoid blocking the main thread
+        const chunkSize = 1000;
+        const entries = Object.entries(data);
         
+        // Process data in smaller chunks
+        for (let i = 0; i < entries.length; i += chunkSize) {
+          const chunk = entries.slice(i, i + chunkSize);
+          
+          // Use setTimeout to allow other tasks to run
+          await new Promise(resolve => {
+            setTimeout(() => {
+              chunk.forEach(([url, details]) => {
+                const [questionName, companyName] = details;
+                uniqueCompanies.add(companyName);
+                
+                if (!processedCompanies[companyName]) {
+                  processedCompanies[companyName] = [];
+                }
+                
+                processedCompanies[companyName].push({
+                  name: questionName,
+                  url: url
+                });
+              });
+              resolve();
+            }, 0);
+          });
+          
+          // Check if the request was aborted
+          if (signal.aborted) {
+            throw new Error('Request aborted');
+          }
+        }
+        
+        // Convert to array only after all processing is done
         const companyList = Array.from(uniqueCompanies).map((name, index) => ({
           id: index + 1,
           name: name,
@@ -71,7 +101,7 @@ const Companies = () => {
         // Fetch target companies
         console.log('Fetching target companies...');
         try {
-          const targetResponse = await get('/api/target-companies');
+          const targetResponse = await get('/api/target-companies', { signal });
           console.log('Target companies response:', targetResponse);
           
           // The response might be the data array directly or in a data property
@@ -86,27 +116,38 @@ const Companies = () => {
             setTargetCompanies([]);
           }
         } catch (targetErr) {
-          console.error('Error fetching target companies:', targetErr);
-          setTargetCompanies([]);
+          if (!targetErr.name === 'AbortError') {
+            console.error('Error fetching target companies:', targetErr);
+            setTargetCompanies([]);
+          }
         }
       } catch (err) {
-        console.error('Error fetching data:', err);
-        setError('Failed to load data');
+        if (!err.name === 'AbortError') {
+          console.error('Error fetching data:', err);
+          setError('Failed to load data');
+        }
       } finally {
-        setLoading(false);
+        if (!signal.aborted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchData();
+    
+    // Cleanup function to abort fetch requests when the component unmounts
+    return () => {
+      controller.abort();
+    };
   }, [refreshKey]);
 
-  const handleCompanyClick = (company) => {
+  const handleCompanyClick = useCallback((company) => {
     setSelectedCompany(company);
     setSelectedQuestion(null);
     setQuestionDescription('');
-  };
+  }, []);
 
-  const handleQuestionClick = async (question) => {
+  const handleQuestionClick = useCallback(async (question) => {
     setSelectedQuestion(question);
     setQuestionLoading(true);
     
@@ -124,9 +165,9 @@ For now, this is a placeholder. The actual implementation would require a backen
     } finally {
       setQuestionLoading(false);
     }
-  };
+  }, []);
 
-  const handleAddTargetCompany = async (e) => {
+  const handleAddTargetCompany = useCallback(async (e) => {
     e.preventDefault();
     try {
       console.log('Submitting new target company:', newTargetCompany);
@@ -145,7 +186,7 @@ For now, this is a placeholder. The actual implementation would require a backen
             newCompany.questions = [];
           }
           
-          // Add to state
+          // Add to state using functional update to avoid stale closure
           setTargetCompanies(prevCompanies => [...prevCompanies, newCompany]);
           setShowAddForm(false);
           setError(''); // Clear any existing errors
@@ -175,17 +216,21 @@ For now, this is a placeholder. The actual implementation would require a backen
       console.error('Error adding target company:', err);
       setError(err.response?.data?.message || err.message || 'Failed to add target company. Please try again.');
     }
-  };
+  }, [newTargetCompany, forceRefresh]);
 
-  const handleUpdateTargetCompany = async (e) => {
+  const handleUpdateTargetCompany = useCallback(async (e) => {
     e.preventDefault();
     try {
+      if (!editingCompany || !editingCompany._id) {
+        throw new Error('No company selected for editing');
+      }
+      
       console.log('Updating target company:', editingCompany);
       const response = await put(`/api/target-companies/${editingCompany._id}`, editingCompany);
       console.log('Server response:', response);
       
       if (response) {
-        // Update the company in the state
+        // Update the company in the state using functional update
         setTargetCompanies(prevCompanies => 
           prevCompanies.map(company => 
             company._id === editingCompany._id ? response : company
@@ -205,34 +250,39 @@ For now, this is a placeholder. The actual implementation would require a backen
       console.error('Error updating target company:', err);
       setError(err.response?.data?.message || err.message || 'Failed to update target company. Please try again.');
     }
-  };
+  }, [editingCompany, forceRefresh]);
 
-  const handleDeleteTargetCompany = async (id) => {
+  const handleDeleteTargetCompany = useCallback(async (id) => {
     try {
       await del(`/api/target-companies/${id}`);
-      setTargetCompanies(targetCompanies.filter(company => company._id !== id));
+      setTargetCompanies(prevCompanies => prevCompanies.filter(company => company._id !== id));
     } catch (err) {
       console.error('Error deleting target company:', err);
       setError('Failed to delete target company');
     }
-  };
+  }, []);
 
-  const handleStartEdit = (company) => {
+  const handleStartEdit = useCallback((company) => {
     // Create a copy of the company for editing
     setEditingCompany({
       ...company,
       // Format the date for the input field (YYYY-MM-DD)
       targetDate: company.targetDate ? new Date(company.targetDate).toISOString().split('T')[0] : ''
     });
-  };
+  }, []);
 
-  const handleCancelEdit = () => {
+  const handleCancelEdit = useCallback(() => {
     setEditingCompany(null);
-  };
+  }, []);
 
-  const filteredCompanies = companies.filter(company =>
-    company && company.name && company.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Use useMemo to filter companies only when dependencies change
+  const filteredCompanies = useMemo(() => {
+    if (!searchQuery || !companies.length) return companies;
+    
+    return companies.filter(company =>
+      company && company.name && company.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [companies, searchQuery]);
 
   if (loading) return (
     <div className="loading-container">

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { Container, Row, Col, Card, Tab, Nav, Button, Form, InputGroup } from 'react-bootstrap';
 import { FaSearch, FaStar, FaPlus, FaTrash, FaRegStar } from 'react-icons/fa';
@@ -12,34 +12,60 @@ const CompaniesPage = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const [companiesRes, targetCompaniesRes] = await Promise.all([
-          axios.get('http://localhost:5000/api/companies'),
-          axios.get('http://localhost:5000/api/targetCompanies')
-        ]);
+  // Use useCallback to memoize the fetchData function
+  const fetchData = useCallback(async () => {
+    // Create a cancel token source
+    const source = axios.CancelToken.source();
+
+    try {
+      setLoading(true);
+      const [companiesRes, targetCompaniesRes] = await Promise.all([
+        axios.get('http://localhost:5000/api/companies', { cancelToken: source.token }),
+        axios.get('http://localhost:5000/api/targetCompanies', { cancelToken: source.token })
+      ]);
+      
+      // Only update state if we have valid data
+      if (companiesRes.data && Array.isArray(companiesRes.data)) {
         setCompanies(companiesRes.data);
+      }
+      
+      if (targetCompaniesRes.data && Array.isArray(targetCompaniesRes.data)) {
         setTargetCompanies(targetCompaniesRes.data);
-      } catch (err) {
+      }
+    } catch (err) {
+      if (!axios.isCancel(err)) {
         setError('Failed to fetch data');
         console.error(err);
-      } finally {
-        setLoading(false);
       }
-    };
+    } finally {
+      setLoading(false);
+    }
 
-    fetchData();
+    // Return the cancel function
+    return () => {
+      source.cancel('Component unmounted');
+    };
   }, []);
+
+  useEffect(() => {
+    const cancelFetch = fetchData();
+    
+    // Cleanup function to cancel any pending requests when component unmounts
+    return () => {
+      if (cancelFetch) cancelFetch();
+    };
+  }, [fetchData]);
 
   const handleAddTargetCompany = async () => {
     if (!newCompany.trim()) return;
     
     try {
       const response = await axios.post('http://localhost:5000/api/targetCompanies', { name: newCompany });
-      setTargetCompanies([...targetCompanies, response.data]);
-      setNewCompany('');
+      if (response.data) {
+        // Use functional update to avoid stale closures
+        setTargetCompanies(prev => [...prev, response.data]);
+        setNewCompany('');
+      }
     } catch (err) {
       setError('Failed to add company');
       console.error(err);
@@ -49,20 +75,30 @@ const CompaniesPage = () => {
   const handleRemoveTargetCompany = async (id) => {
     try {
       await axios.delete(`http://localhost:5000/api/targetCompanies/${id}`);
-      setTargetCompanies(targetCompanies.filter(company => company._id !== id));
+      // Use functional update to avoid stale closures
+      setTargetCompanies(prev => prev.filter(company => company._id !== id));
     } catch (err) {
       setError('Failed to remove company');
       console.error(err);
     }
   };
 
-  const filteredCompanies = companies.filter(company => 
-    company.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Memoize filtering operations to reduce re-calculations
+  const filteredCompanies = useCallback(() => {
+    return companies.filter(company => 
+      company.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [companies, searchTerm]);
 
-  const filteredTargetCompanies = targetCompanies.filter(company => 
-    company.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredTargetCompanies = useCallback(() => {
+    return targetCompanies.filter(company => 
+      company.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [targetCompanies, searchTerm]);
+
+  // Get the filtered values
+  const computedFilteredCompanies = filteredCompanies();
+  const computedFilteredTargetCompanies = filteredTargetCompanies();
 
   if (loading) return <div className="text-center mt-5">Loading companies data...</div>;
   if (error) return <div className="text-center mt-5 text-danger">{error}</div>;
@@ -116,7 +152,7 @@ const CompaniesPage = () => {
                   </InputGroup>
                 </div>
 
-                {filteredTargetCompanies.length === 0 ? (
+                {computedFilteredTargetCompanies.length === 0 ? (
                   <div className="text-center py-5 empty-state">
                     <FaStar size={40} className="mb-3 text-muted" />
                     <h5>No target companies yet</h5>
@@ -124,7 +160,7 @@ const CompaniesPage = () => {
                   </div>
                 ) : (
                   <Row xs={1} md={2} lg={3} className="g-4">
-                    {filteredTargetCompanies.map((company) => (
+                    {computedFilteredTargetCompanies.map((company) => (
                       <Col key={company._id}>
                         <Card className="company-card target-company">
                           <Card.Body>
@@ -146,7 +182,7 @@ const CompaniesPage = () => {
                 )}
               </Tab.Pane>
               <Tab.Pane eventKey="all">
-                {filteredCompanies.length === 0 ? (
+                {computedFilteredCompanies.length === 0 ? (
                   <div className="text-center py-5 empty-state">
                     <FaRegStar size={40} className="mb-3 text-muted" />
                     <h5>No companies found</h5>
@@ -154,7 +190,7 @@ const CompaniesPage = () => {
                   </div>
                 ) : (
                   <Row xs={1} md={2} lg={3} className="g-4">
-                    {filteredCompanies.map((company) => (
+                    {computedFilteredCompanies.map((company) => (
                       <Col key={company._id}>
                         <Card className="company-card">
                           <Card.Body>
