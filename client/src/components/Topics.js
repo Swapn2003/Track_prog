@@ -77,12 +77,17 @@ const Topics = () => {
         <div className="topics-container">
             <div className="topics-header">
                 <h1>DSA Topics</h1>
-                <button 
-                    className="add-topic-button"
-                    onClick={() => setShowAddTopic(true)}
-                >
-                    Add New Topic
-                </button>
+                <div className="topics-header-actions">
+                    <Link to="/all-problems" className="view-all-problems-button">
+                        View All Problems
+                    </Link>
+                    <button 
+                        className="add-topic-button"
+                        onClick={() => setShowAddTopic(true)}
+                    >
+                        Add New Topic
+                    </button>
+                </div>
             </div>
 
             <div className="search-section">

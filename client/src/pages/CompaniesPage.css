@@ -1,0 +1,113 @@
+.companies-title {
+  font-weight: 700;
+  color: #2c3e50;
+  position: relative;
+  display: inline-block;
+  margin-bottom: 0.5rem;
+}
+
+.companies-title::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 60px;
+  height: 4px;
+  background-color: #3498db;
+  border-radius: 2px;
+}
+
+.search-box {
+  max-width: 600px;
+  margin: 0 auto 2rem;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.search-box .form-control {
+  border: none;
+  padding: 0.8rem 1.2rem;
+  font-size: 1rem;
+}
+
+.search-box .input-group-text {
+  background-color: white;
+  border: none;
+  color: #6c757d;
+}
+
+.company-tabs {
+  border-bottom: 2px solid #e9ecef;
+  padding-bottom: 0;
+}
+
+.company-tabs .nav-link {
+  color: #6c757d;
+  font-weight: 600;
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-bottom: 3px solid transparent;
+  border-radius: 0;
+  margin-right: 10px;
+  transition: all 0.2s;
+}
+
+.company-tabs .nav-link:hover {
+  color: #3498db;
+}
+
+.company-tabs .nav-link.active {
+  color: #3498db;
+  background-color: transparent;
+  border-bottom: 3px solid #3498db;
+}
+
+.company-card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  overflow: hidden;
+  height: 100%;
+}
+
+.company-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.target-company {
+  border-left: 4px solid #3498db;
+}
+
+.company-name {
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 0.8rem;
+}
+
+.company-details {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  font-weight: 500;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+}
+
+.empty-state {
+  background-color: rgba(236, 240, 241, 0.5);
+  border-radius: 12px;
+  padding: 2rem;
+}
+
+@media (max-width: 768px) {
+  .company-tabs .nav-link {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+  }
+} 
