@@ -12,6 +12,7 @@ import Navbar from './components/Navbar';
 import { AppProvider } from './context/AppContext';
 import Companies from './components/Companies';
 import AllProblems from './components/AllProblems';
+import TargetCompanyDetail from './components/TargetCompanyDetail';
 import './App.css';
 
 function App() {
@@ -69,6 +70,11 @@ function App() {
             <Route path="/companies" element={
               <ProtectedRoute>
                 <Companies />
+              </ProtectedRoute>
+            } />
+            <Route path="/target-company/:id" element={
+              <ProtectedRoute>
+                <TargetCompanyDetail />
               </ProtectedRoute>
             } />
             <Route path="/all-problems" element={

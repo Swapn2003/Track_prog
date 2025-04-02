@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { get, post, put, del } from '../utils/api';
 import './Companies.css';
+import { useNavigate } from 'react-router-dom';
 
 const Companies = () => {
   const [companies, setCompanies] = useState([]);
@@ -26,6 +27,7 @@ const Companies = () => {
     targetDate: '',
     questions: []
   });
+  const navigate = useNavigate();
 
   const forceRefresh = () => {
     setRefreshKey(prevKey => prevKey + 1);
@@ -104,6 +106,10 @@ const Companies = () => {
     setSelectedCompany(company);
     setSelectedQuestion(null);
     setQuestionDescription('');
+  };
+
+  const handleTargetCompanyClick = (company) => {
+    navigate(`/target-company/${company._id}`);
   };
 
   const handleQuestionClick = async (question) => {
@@ -631,7 +637,11 @@ For now, this is a placeholder. The actual implementation would require a backen
             ) : (
               safeTargetCompanies.map((company) => (
                 <div key={company?._id || `temp-${Date.now()}-${Math.random()}`} className="target-company-card">
-                  <div className="target-company-header">
+                  <div 
+                    className="target-company-header"
+                    onClick={() => handleTargetCompanyClick(company)}
+                    style={{ cursor: 'pointer' }}
+                  >
                     <h3>{company?.name}</h3>
                     <div className="target-company-badges">
                       <span className={`status-badge ${company?.status?.toLowerCase() || 'planning'}`}>
@@ -663,10 +673,16 @@ For now, this is a placeholder. The actual implementation would require a backen
                     </div>
                   </div>
                   <div className="target-company-actions">
-                    <button onClick={() => handleDeleteTargetCompany(company?._id)}>
+                    <button onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteTargetCompany(company?._id);
+                    }}>
                       Delete
                     </button>
-                    <button onClick={() => handleStartEdit(company)}>
+                    <button onClick={(e) => {
+                      e.stopPropagation();
+                      handleStartEdit(company);
+                    }}>
                       Edit
                     </button>
                   </div>

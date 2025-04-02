@@ -218,6 +218,20 @@ const targetCompanySchema = new mongoose.Schema({
         type: String,
         default: ''
     },
+    tips: {
+        type: String,
+        default: ''
+    },
+    interviewExperiences: [{
+        date: Date,
+        round: String,
+        notes: String,
+        outcome: {
+            type: String,
+            enum: ['Passed', 'Failed', 'Waiting', 'Cancelled'],
+            default: 'Waiting'
+        }
+    }],
     targetDate: {
         type: Date
     },
@@ -584,25 +598,40 @@ app.post('/api/topics', authMiddleware, async (req, res) => {
 // Get all target companies for the user
 app.get('/api/target-companies', authMiddleware, async (req, res) => {
     try {
-        console.log('Fetching target companies for user:', req.user.userId);
-        
         const targetCompanies = await TargetCompany.find({ user: req.user.userId })
             .sort({ updatedAt: -1 });
-            
+        
         console.log('Found target companies:', targetCompanies.length);
         
         if (!targetCompanies || targetCompanies.length === 0) {
-            console.log('No target companies found for user');
-            return res.json([]);  // Return empty array instead of 500 error
+            return res.json([]);
         }
         
         res.json(targetCompanies);
-    } catch (err) {
-        console.error('Error fetching target companies:', err);
-        res.status(500).json({ 
-            message: 'Failed to fetch target companies',
-            error: err.message 
-        });
+    } catch (error) {
+        console.error('Error fetching target companies:', error);
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Get a single target company by ID
+app.get('/api/target-companies/:id', authMiddleware, async (req, res) => {
+    try {
+        const targetCompany = await TargetCompany.findById(req.params.id);
+        
+        if (!targetCompany) {
+            return res.status(404).json({ message: 'Target company not found' });
+        }
+        
+        // Ensure the user has permission to view this company
+        if (targetCompany.user.toString() !== req.user.userId) {
+            return res.status(403).json({ message: 'Not authorized to access this company' });
+        }
+        
+        res.json(targetCompany);
+    } catch (error) {
+        console.error('Error fetching target company:', error);
+        res.status(500).json({ message: error.message });
     }
 });
 
@@ -644,7 +673,7 @@ app.post('/api/target-companies', authMiddleware, async (req, res) => {
 // Update a target company
 app.put('/api/target-companies/:id', authMiddleware, async (req, res) => {
     try {
-        const { name, status, priority, notes, targetDate, questions } = req.body;
+        const { name, status, priority, notes, tips, targetDate, questions, interviewExperiences } = req.body;
         
         let targetCompany = await TargetCompany.findById(req.params.id);
         if (!targetCompany) return res.status(404).json({ msg: 'Target company not found' });
@@ -654,19 +683,21 @@ app.put('/api/target-companies/:id', authMiddleware, async (req, res) => {
             return res.status(401).json({ msg: 'User not authorized' });
         }
 
+        // Create an update object with only the fields that are provided
+        const updateFields = {};
+        if (name !== undefined) updateFields.name = name;
+        if (status !== undefined) updateFields.status = status;
+        if (priority !== undefined) updateFields.priority = priority;
+        if (notes !== undefined) updateFields.notes = notes;
+        if (tips !== undefined) updateFields.tips = tips;
+        if (targetDate !== undefined) updateFields.targetDate = targetDate;
+        if (questions !== undefined) updateFields.questions = questions;
+        if (interviewExperiences !== undefined) updateFields.interviewExperiences = interviewExperiences;
+        updateFields.updatedAt = Date.now();
+
         targetCompany = await TargetCompany.findByIdAndUpdate(
             req.params.id,
-            {
-                $set: {
-                    name,
-                    status,
-                    priority,
-                    notes,
-                    targetDate,
-                    questions,
-                    updatedAt: Date.now()
-                }
-            },
+            { $set: updateFields },
             { new: true }
         );
 
