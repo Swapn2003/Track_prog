@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { get, patch } from '../utils/api';
 import SubtopicManager from './SubtopicManager';
 import SubtopicFilter from './SubtopicFilter';
+import ReferenceMaterials from './ReferenceMaterials';
 import './TopicEntries.css';
 
 const TopicEntries = () => {
@@ -181,132 +182,144 @@ const TopicEntries = () => {
                     >
                         Starred
                     </button>
+                    <button 
+                        className={`tab ${activeTab === 'references' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('references')}
+                    >
+                        References
+                    </button>
                 </div>
             </div>
             
-            {filteredEntries.length === 0 ? (
-                <div className="no-entries">
-                    {searchTerm ? (
-                        <p>No problems found matching your search.</p>
-                    ) : (
-                        <>
-                            <p>No problems added yet for this topic.</p>
-                            <button onClick={handleAddProblem}>Add Your First Problem</button>
-                        </>
-                    )}
-                </div>
+            {activeTab === 'references' ? (
+                <ReferenceMaterials topic={topic} />
             ) : (
-                <div className="entries-list">
-                    {filteredEntries.map(entry => (
-                        <div key={entry._id} className="entry-card">
-                            <div className="entry-header">
-                                <div className="problem-badge">
-                                    {entry.isStarred && <span className="badge star">Starred</span>}
-                                    {entry.isBasic && <span className="badge basic">Basic</span>}
-                                </div>
-                                <h2>{entry.title}</h2>
-                                <p className="description">{entry.description}</p>
-                                
-                                {/* Display subtopics */}
-                                {entry.subtopics && entry.subtopics.length > 0 && (
-                                    <div className="entry-subtopics">
-                                        {entry.subtopics.map(subtopic => (
-                                            <span key={subtopic} className="subtopic-tag-display">
-                                                {subtopic}
-                                            </span>
-                                        ))}
-                                        <button 
-                                            className="edit-subtopics-button"
-                                            onClick={() => setEditingSubtopics(entry._id)}
-                                        >
-                                            Edit
-                                        </button>
-                                    </div>
-                                )}
-                                
-                                {/* Edit subtopics */}
-                                {editingSubtopics === entry._id && (
-                                    <div className="edit-subtopics-container">
-                                        <SubtopicManager 
-                                            topic={topic}
-                                            entryId={entry._id}
-                                            initialSubtopics={entry.subtopics || []}
-                                            onUpdate={handleSubtopicsUpdate}
-                                        />
-                                        <button 
-                                            className="close-subtopics-button"
-                                            onClick={() => setEditingSubtopics(null)}
-                                        >
-                                            Done
-                                        </button>
-                                    </div>
-                                )}
-                                
-                                {/* If no subtopics, show add button */}
-                                {(!entry.subtopics || entry.subtopics.length === 0) && editingSubtopics !== entry._id && (
-                                    <button 
-                                        className="add-subtopics-button"
-                                        onClick={() => setEditingSubtopics(entry._id)}
-                                    >
-                                        + Add Subtopics
-                                    </button>
-                                )}
-                                
-                                <a href={entry.problemLink} target="_blank" rel="noopener noreferrer" className="problem-link">
-                                    Solve Problem →
-                                </a>
-                                <div className="problem-actions">
-                                    <button 
-                                        className={`star-button ${entry.isStarred ? 'active' : ''}`}
-                                        onClick={() => toggleStar(entry._id)}
-                                    >
-                                        {entry.isStarred ? '★ Starred' : '☆ Star'}
-                                    </button>
-                                    <button 
-                                        className={`basic-button ${entry.isBasic ? 'active' : ''}`}
-                                        onClick={() => toggleBasic(entry._id)}
-                                    >
-                                        {entry.isBasic ? '✓ Basic' : '○ Mark as Basic'}
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <div className="entry-details">
-                                <button 
-                                    className="expand-button"
-                                    onClick={() => toggleExpand(entry._id, 'approach')}
-                                >
-                                    {expandedEntries[entry._id]?.approach ? 'Hide Approach' : 'Show Approach'}
-                                </button>
-                                
-                                {expandedEntries[entry._id]?.approach && (
-                                    <div className="approach-section">
-                                        <h3>Approach</h3>
-                                        <p>{entry.approach}</p>
-                                        <div className="complexity">
-                                            <p>Time Complexity: {entry.timeComplexity}</p>
-                                            <p>Space Complexity: {entry.spaceComplexity}</p>
+                <>
+                    {filteredEntries.length === 0 ? (
+                        <div className="no-entries">
+                            {searchTerm ? (
+                                <p>No problems found matching your search.</p>
+                            ) : (
+                                <>
+                                    <p>No problems added yet for this topic.</p>
+                                    <button onClick={handleAddProblem}>Add Your First Problem</button>
+                                </>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="entries-list">
+                            {filteredEntries.map(entry => (
+                                <div key={entry._id} className="entry-card">
+                                    <div className="entry-header">
+                                        <div className="problem-badge">
+                                            {entry.isStarred && <span className="badge star">Starred</span>}
+                                            {entry.isBasic && <span className="badge basic">Basic</span>}
                                         </div>
+                                        <h2>{entry.title}</h2>
+                                        <p className="description">{entry.description}</p>
                                         
+                                        {/* Display subtopics */}
+                                        {entry.subtopics && entry.subtopics.length > 0 && (
+                                            <div className="entry-subtopics">
+                                                {entry.subtopics.map(subtopic => (
+                                                    <span key={subtopic} className="subtopic-tag-display">
+                                                        {subtopic}
+                                                    </span>
+                                                ))}
+                                                <button 
+                                                    className="edit-subtopics-button"
+                                                    onClick={() => setEditingSubtopics(entry._id)}
+                                                >
+                                                    Edit
+                                                </button>
+                                            </div>
+                                        )}
+                                        
+                                        {/* Edit subtopics */}
+                                        {editingSubtopics === entry._id && (
+                                            <div className="edit-subtopics-container">
+                                                <SubtopicManager 
+                                                    topic={topic}
+                                                    entryId={entry._id}
+                                                    initialSubtopics={entry.subtopics || []}
+                                                    onUpdate={handleSubtopicsUpdate}
+                                                />
+                                                <button 
+                                                    className="close-subtopics-button"
+                                                    onClick={() => setEditingSubtopics(null)}
+                                                >
+                                                    Done
+                                                </button>
+                                            </div>
+                                        )}
+                                        
+                                        {/* If no subtopics, show add button */}
+                                        {(!entry.subtopics || entry.subtopics.length === 0) && editingSubtopics !== entry._id && (
+                                            <button 
+                                                className="add-subtopics-button"
+                                                onClick={() => setEditingSubtopics(entry._id)}
+                                            >
+                                                + Add Subtopics
+                                            </button>
+                                        )}
+                                        
+                                        <a href={entry.problemLink} target="_blank" rel="noopener noreferrer" className="problem-link">
+                                            Solve Problem →
+                                        </a>
+                                        <div className="problem-actions">
+                                            <button 
+                                                className={`star-button ${entry.isStarred ? 'active' : ''}`}
+                                                onClick={() => toggleStar(entry._id)}
+                                            >
+                                                {entry.isStarred ? '★ Starred' : '☆ Star'}
+                                            </button>
+                                            <button 
+                                                className={`basic-button ${entry.isBasic ? 'active' : ''}`}
+                                                onClick={() => toggleBasic(entry._id)}
+                                            >
+                                                {entry.isBasic ? '✓ Basic' : '○ Mark as Basic'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="entry-details">
                                         <button 
                                             className="expand-button"
-                                            onClick={() => toggleExpand(entry._id, 'code')}
+                                            onClick={() => toggleExpand(entry._id, 'approach')}
                                         >
-                                            {expandedEntries[entry._id]?.code ? 'Hide Code' : 'Show Code'}
+                                            {expandedEntries[entry._id]?.approach ? 'Hide Approach' : 'Show Approach'}
                                         </button>
                                         
-                                        {expandedEntries[entry._id]?.code && (
-                                            <div className="code-section">
-                                                <h3>Solution</h3>
-                                                <pre><code>{entry.code}</code></pre>
+                                        {expandedEntries[entry._id]?.approach && (
+                                            <div className="approach-section">
+                                                <h3>Approach</h3>
+                                                <p>{entry.approach}</p>
+                                                <div className="complexity">
+                                                    <p>Time Complexity: {entry.timeComplexity}</p>
+                                                    <p>Space Complexity: {entry.spaceComplexity}</p>
+                                                </div>
+                                                
+                                                <button 
+                                                    className="expand-button"
+                                                    onClick={() => toggleExpand(entry._id, 'code')}
+                                                >
+                                                    {expandedEntries[entry._id]?.code ? 'Hide Code' : 'Show Code'}
+                                                </button>
+                                                
+                                                {expandedEntries[entry._id]?.code && (
+                                                    <div className="code-section">
+                                                        <h3>Solution</h3>
+                                                        <pre><code>{entry.code}</code></pre>
+                                                    </div>
+                                                )}
                                             </div>
                                         )}
                                     </div>
-                                )}
-                            </div>
+                                </div>
+                            ))}
                         </div>
-                    ))}
-                </div>
+                    )}
+                </>
             )}
         </div>
     );

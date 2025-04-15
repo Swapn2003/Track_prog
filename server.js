@@ -270,8 +270,46 @@ dsaEntrySchema.statics.getSubtopics = function(userId, topic) {
     return this.distinct('subtopics', { userId, topic });
 };
 
+// Reference Material Schema
+const referenceMaterialSchema = new mongoose.Schema({
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
+    topic: {
+        type: String,
+        required: true
+    },
+    title: {
+        type: String,
+        required: true
+    },
+    content: {
+        type: String,
+        required: true
+    },
+    url: {
+        type: String
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
+    },
+    updatedAt: {
+        type: Date,
+        default: Date.now
+    }
+});
+
+referenceMaterialSchema.pre('save', function(next) {
+    this.updatedAt = Date.now();
+    next();
+});
+
 const DSAEntry = mongoose.model('DSAEntry', dsaEntrySchema);
 const TargetCompany = mongoose.model('TargetCompany', targetCompanySchema);
+const ReferenceMaterial = mongoose.model('ReferenceMaterial', referenceMaterialSchema);
 
 // Routes
 // Get all unique topics
@@ -758,6 +796,102 @@ app.get('/api/topics/:topic/subtopics', authMiddleware, async (req, res) => {
         res.json(subtopics);
     } catch (error) {
         console.error('Error fetching subtopics:', error);
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Get reference materials by topic
+app.get('/api/reference/:topic', authMiddleware, async (req, res) => {
+    try {
+        const references = await ReferenceMaterial.find({ 
+            topic: req.params.topic,
+            user: req.user.userId 
+        }).sort({ createdAt: -1 });
+        
+        res.json(references);
+    } catch (error) {
+        console.error('Error fetching reference materials:', error);
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Add reference material
+app.post('/api/reference', authMiddleware, async (req, res) => {
+    try {
+        const { topic, title, content, url } = req.body;
+        
+        if (!topic || !title || !content) {
+            return res.status(400).json({ message: 'Topic, title, and content are required' });
+        }
+        
+        const referenceMaterial = new ReferenceMaterial({
+            user: req.user.userId,
+            topic,
+            title,
+            content,
+            url: url || ''
+        });
+        
+        const savedMaterial = await referenceMaterial.save();
+        res.status(201).json(savedMaterial);
+    } catch (error) {
+        console.error('Error adding reference material:', error);
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Update reference material
+app.put('/api/reference/:id', authMiddleware, async (req, res) => {
+    try {
+        const { title, content, url } = req.body;
+        
+        let reference = await ReferenceMaterial.findById(req.params.id);
+        if (!reference) {
+            return res.status(404).json({ message: 'Reference material not found' });
+        }
+        
+        // Ensure the user has permission
+        if (reference.user.toString() !== req.user.userId) {
+            return res.status(403).json({ message: 'Not authorized to update this reference material' });
+        }
+        
+        const updateFields = {};
+        if (title !== undefined) updateFields.title = title;
+        if (content !== undefined) updateFields.content = content;
+        if (url !== undefined) updateFields.url = url;
+        updateFields.updatedAt = Date.now();
+        
+        reference = await ReferenceMaterial.findByIdAndUpdate(
+            req.params.id,
+            { $set: updateFields },
+            { new: true }
+        );
+        
+        res.json(reference);
+    } catch (error) {
+        console.error('Error updating reference material:', error);
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Delete reference material
+app.delete('/api/reference/:id', authMiddleware, async (req, res) => {
+    try {
+        const reference = await ReferenceMaterial.findById(req.params.id);
+        
+        if (!reference) {
+            return res.status(404).json({ message: 'Reference material not found' });
+        }
+        
+        // Ensure the user has permission
+        if (reference.user.toString() !== req.user.userId) {
+            return res.status(403).json({ message: 'Not authorized to delete this reference material' });
+        }
+        
+        await reference.deleteOne();
+        res.json({ message: 'Reference material removed' });
+    } catch (error) {
+        console.error('Error deleting reference material:', error);
         res.status(500).json({ message: error.message });
     }
 });
