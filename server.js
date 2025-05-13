@@ -23,15 +23,35 @@ app.use(express.json());
 
 // Initialize Google Sheets service
 let googleSheetsService;
+// try {
+//     console.log('Loading Google credentials...');
+//     const credentials = require('./google-credentials.json');
+//     googleSheetsService = new GoogleSheetsService(credentials);
+//     console.log('Google Sheets service initialized successfully');
+// }catch (error) {
+//     console.error('Error loading Google credentials:', error);
+//     console.error('Make sure google-credentials.json exists in the root directory');
+// }
+
+
 try {
     console.log('Loading Google credentials...');
     const credentials = require('./google-credentials.json');
     googleSheetsService = new GoogleSheetsService(credentials);
     console.log('Google Sheets service initialized successfully');
-} catch (error) {
-    console.error('Error loading Google credentials:', error);
-    console.error('Make sure google-credentials.json exists in the root directory');
+} catch (err) {
+    console.warn('Local credentials file not found, trying environment variable...');
+    try {
+        const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS);
+        googleSheetsService = new GoogleSheetsService(credentials);
+        console.log('Google Sheets service initialized successfully from environment variable');
+    } catch (envErr) {
+        console.error('Failed to load Google credentials from environment variable.', envErr);
+        console.error('Make sure google-credentials.json exists or GOOGLE_CREDENTIALS is set.');
+        throw envErr;
+    }
 }
+
 
 // MongoDB Connection with better error handling
 const connectDB = async () => {
