@@ -1,4 +1,5 @@
-const API_URL = 'https://track-prog-backend.onrender.com';
+// const API_URL = 'https://track-prog-backend.onrender.com';
+const API_URL = 'https://track-prog-backend.vercel.app';
 
 // Check authentication status on popup open
 document.addEventListener('DOMContentLoaded', async () => {

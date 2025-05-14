@@ -11,7 +11,8 @@
   "host_permissions": [
     "https://leetcode.com/*",
     "https://track-prog-frontend.onrender.com/*",
-    "https://track-prog-backend.onrender.com/*"
+    "https://track-prog-backend.onrender.com/*",
+    "https://track-prog-backend.vercel.app/*"
   ],
   "action": {
     "default_popup": "popup.html",
