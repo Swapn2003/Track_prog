@@ -12,7 +12,8 @@
     "https://leetcode.com/*",
     "https://track-prog-frontend.onrender.com/*",
     "https://track-prog-backend.onrender.com/*",
-    "https://track-prog-backend.vercel.app/*"
+    "https://track-prog-backend.vercel.app/*",
+    "https://track-prog.vercel.app/*"
   ],
   "action": {
     "default_popup": "popup.html",

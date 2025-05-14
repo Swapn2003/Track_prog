@@ -12,7 +12,7 @@
             "dest": "/server.js",
             "methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
             "headers": {
-                "Access-Control-Allow-Origin": "https://track-prog-frontend.onrender.com",
+                "Access-Control-Allow-Origin": "https://track-prog.vercel.app",
                 "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
                 "Access-Control-Allow-Headers": "Content-Type, Authorization"
             }
