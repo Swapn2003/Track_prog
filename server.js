@@ -12,7 +12,7 @@ const app = express();
 
 // CORS configuration
 const corsOptions = {
-    origin: ['https://track-prog-frontend.onrender.com', 'http://localhost:3000'],
+    origin: ['https://track-prog-frontend.onrender.com', 'http://localhost:3000','https://track-prog.vercel.app'],
     credentials: true,
     optionsSuccessStatus: 200
 };
