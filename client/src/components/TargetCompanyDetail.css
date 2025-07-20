@@ -343,6 +343,8 @@
   padding: 1rem;
   border-radius: 4px;
   margin-bottom: 1rem;
+  max-height: 200px;
+  overflow-y: auto;
 }
 
 .question-notes p {
